@@ -2,16 +2,28 @@ var express = require('express');
 var router = express.Router();
 var Blih = require('blih');
 
-/* GET home page. */
-router.get('/', function(req, res, next) {
-  res.render('index', { title: 'Express' });
+router.get('/gettoken', function(req, res) {
+    const api = new Blih({ email: req.query.email, password: req.query.password });
+    api.listRepositories()
+        .then(data => {
+            return res.status(200).send({token: api.token, status: 200})
+        }).catch(e => {
+            return res.status(401).send({response: "Unauthorized", status: 401})
+    });
 });
 
-router.get('/initToken', function(req, res, next) {
-    const api = new Blih({ email: 'valentin.ichkour@epitech.eu', password: 'yZUhlbf@' });
+router.get('/repositories', function(req, res) {
+    if (req.query.token == null)
+        return res.status(401);
+    const api = new Blih({ email: req.query.email, token: req.query.token});
     api.listRepositories()
-        .then(console.log)
-        .catch(console.log);
+        .then(data => {
+            return res.status(200).send({repositories: data, status: 200})
+        })
+        .catch(e => {
+            return res.status(401).send({response: "Unauthorized", status: 401})
+        });
+
 });
 
 module.exports = router;
